@@ -106,9 +106,12 @@ class TasksTable(QTableWidget):
         self._header = ["id", "Name", "Task type", "Abort on miss",
                         "Act. Date (ms)", "Period (ms)",
                         "List of Act. dates (ms)", "Deadline (ms)",
-                        "WCET (ms)", "ACET (ms)", "ET Std Dev (ms)",
+                        "WCET (ms)",
+                        "ACET (ms)", "ET Std Dev (ms)",
                         "Base CPI", "Instructions", "MIX",
-                        "Stack file", "Preemption cost", "Followed by"]
+                        "Stack file", "Preemption cost", "Followed by",
+
+                        "Probabilities", "Modes"]
 
         self._dict_header = {
             'id': 0,
@@ -127,7 +130,10 @@ class TasksTable(QTableWidget):
             'mix': 13,
             'sdp': 14,
             'preemption_cost': 15,
-            'followed': 16
+            'followed': 16,
+
+            'Probabilities' : 17,
+            'Modes' : 18
         }
 
         self.refresh_table()
@@ -147,6 +153,9 @@ class TasksTable(QTableWidget):
         self.horizontalHeader().hideSection(
             self._dict_header['preemption_cost'])
 
+        self.horizontalHeader().hideSection(self._dict_header['Probabilities'])
+        self.horizontalHeader().hideSection(self._dict_header['Modes'])
+
         if etm == 'cache':
             self.horizontalHeader().showSection(self._dict_header['base_cpi'])
             self.horizontalHeader().showSection(
@@ -158,6 +167,10 @@ class TasksTable(QTableWidget):
         elif etm == 'acet':
             self.horizontalHeader().showSection(self._dict_header['acet'])
             self.horizontalHeader().showSection(self._dict_header['et_stddev'])
+
+        elif etm == 'pet':
+            self.horizontalHeader().showSection(self._dict_header['Probabilities'])
+            self.horizontalHeader().showSection(self._dict_header['Modes'])
 
         self.resizeColumnsToContents()
 
@@ -314,6 +327,13 @@ class TasksTable(QTableWidget):
             old_value = str(task.deadline)
         elif col == self._dict_header['wcet']:
             old_value = str(task.wcet)
+
+        elif col == self._dict_header['Probabilities']:
+            old_value = ', '.join(map(str, task.proba))
+
+        elif col == self._dict_header['Modes']:
+            old_value = ', '.join(map(str, task.modes))
+
         elif col == self._dict_header['acet']:
             old_value = str(task.acet)
         elif col == self._dict_header['et_stddev']:
@@ -374,6 +394,17 @@ class TasksTable(QTableWidget):
                 wcet = float(self.item(row, col).text())
                 assert wcet > 0
                 task.wcet = wcet
+
+            elif col == self._dict_header['Probabilities']:
+                proba = map(float, self.item(row, col).text().split(','))
+                # assert len(list(proba)) != len(list(task.modes))
+                task.proba = list(proba)
+
+            elif col == self._dict_header['Modes']:
+                modes = map(int, self.item(row, col).text().split(','))
+                # assert len(list(modes)) != len(list(task.proba))
+                task.modes = list(modes)
+
             elif col == self._dict_header['acet']:
                 acet = float(self.item(row, col).text())
                 assert acet > 0
